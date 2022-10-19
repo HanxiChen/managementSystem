@@ -11,5 +11,8 @@ export default {
 </script>
 
 <style>
-
+.bgImg {
+  background: url("../assets/404.png") no-repeat;
+  background-size: 100% 100vh;
+}
 </style>

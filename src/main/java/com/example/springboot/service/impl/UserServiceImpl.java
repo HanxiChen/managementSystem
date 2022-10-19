@@ -3,8 +3,10 @@ package com.example.springboot.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.log.Log;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.springboot.common.Constants;
 import com.example.springboot.controller.dto.UserDTO;
+import com.example.springboot.controller.dto.UserPasswordDTO;
 import com.example.springboot.entity.Menu;
 import com.example.springboot.entity.User;
 import com.example.springboot.exception.ServiceException;
@@ -40,6 +42,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Resource
     private RoleMenuMapper roleMenuMapper;
+
+    @Resource
+    private UserMapper userMapper;
 
     @Resource
     private IMenuService menuService;
@@ -90,6 +95,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new ServiceException(Constants.CODE_500, "系统错误");
         }
         return one;
+    }
+
+    @Override
+    public Page<User> findPage(Page<User> page, String username, String email, String address) {
+        return userMapper.findPage(page, username, email, address);
+    }
+
+    @Override
+    public void updatePassword(UserPasswordDTO userPasswordDto) {
+        int update = userMapper.updatePassword(userPasswordDto);
+        if (update < 1) {
+            throw new ServiceException(Constants.CODE_600, "密码错误");
+        }
     }
 
     // 获取当前角色的菜单列表

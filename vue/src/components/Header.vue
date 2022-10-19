@@ -1,5 +1,5 @@
 <template>
-  <div style="font-size: 12px; line-height: 60px; display: flex">
+  <div style="line-height: 60px; display: flex">
     <div style="flex: 1;">
       <span :class="collapseBtnClass" style="cursor: pointer; font-size: 18px" @click="collapse"></span>
 
@@ -10,11 +10,14 @@
     </div>
     <el-dropdown style="width: 150px; cursor: pointer; text-align: right">
       <div style="display: inline-block">
-        <img :src="user.avatarUrl" alt="" style="width: 30px; height: 30px; border-radius: 50%; position: relative; top: 10px; right: 5px">
+        <img :src="user.avatarUrl" alt=""
+             style="width: 30px; border-radius: 50%; position: relative; top: 10px; right: 5px">
         <span>{{ user.nickname }}</span><i class="el-icon-arrow-down" style="margin-left: 5px"></i>
       </div>
-
       <el-dropdown-menu slot="dropdown" style="width: 100px; text-align: center">
+        <el-dropdown-item style="font-size: 14px; padding: 5px 0">
+          <router-link to="/password">修改密码</router-link>
+        </el-dropdown-item>
         <el-dropdown-item style="font-size: 14px; padding: 5px 0">
           <router-link to="/person">个人信息</router-link>
         </el-dropdown-item>
@@ -29,15 +32,13 @@
 <script>
 export default {
   name: "Header",
-
   props: {
     collapseBtnClass: String,
-    collapse: Function,
     user: Object
   },
   computed: {
-    currentPathName() {
-      return this.$store.state.currentPathName;
+    currentPathName () {
+      return this.$store.state.currentPathName;　　//需要监听的数据
     }
   },
   data() {
@@ -46,18 +47,17 @@ export default {
     }
   },
   methods: {
-    // collapse() {
-    //   this.$emit("asideCollapse")
-    // },
+    collapse() {
+      // this.$parent.$parent.$parent.$parent.collapse()  // 通过4个 $parent 找到父组件，从而调用其折叠方法
+      this.$emit("asideCollapse")
+    },
     logout() {
       this.$store.commit("logout")
       this.$message.success("退出成功")
     }
   }
-
 }
 </script>
 
 <style scoped>
-
 </style>

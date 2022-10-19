@@ -1,5 +1,5 @@
 server:
-  ip: 119.23.239.198
+  ip: localhost
   port: 9090
 
 spring:
@@ -11,6 +11,13 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
+  redis:
+    host: localhost
+    port: 6379
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml  #扫描所有mybatis的xml文件
@@ -21,5 +28,5 @@ mybatis-plus:
 
 files:
   upload:
-#    path: E:/Project/SpringBoot/managementSystem/files/
-    path: /home/files/
+    path: E:/Project/SpringBoot/managementSystem/files/
+#    path: /home/files/

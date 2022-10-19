@@ -7,6 +7,13 @@ import 'element-ui/lib/theme-chalk/index.css';
 import './assets/gloable.css'
 import request from '@/utils/request';
 
+// main.js 全局注册
+import mavonEditor from 'mavon-editor'
+import 'mavon-editor/dist/css/index.css'
+
+// use
+Vue.use(mavonEditor)
+
 Vue.config.productionTip = false
 
 Vue.use(ElementUI, {size: "small"});

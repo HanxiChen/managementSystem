@@ -1,6 +1,7 @@
 package com.example.springboot.controller;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.SecureUtil;
 import cn.hutool.poi.excel.ExcelReader;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
@@ -9,6 +10,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.springboot.common.Constants;
 import com.example.springboot.common.Result;
 import com.example.springboot.controller.dto.UserDTO;
+import com.example.springboot.controller.dto.UserPasswordDTO;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -60,9 +62,30 @@ public class UserController {
         }
         return Result.success(userService.register(userDTO));
     }
+
+    @PostMapping("/password")
+    public Result password(@RequestBody UserPasswordDTO userPasswordDTO) {
+//        userPasswordDTO.setPassword(SecureUtil.md5(userPasswordDTO.getPassword()));
+//        userPasswordDTO.setNewPassword(SecureUtil.md5(userPasswordDTO.getNewPassword()));
+        userService.updatePassword(userPasswordDTO);
+        return Result.success();
+    }
+
     //新增和修改
     @PostMapping
     public Result save(@RequestBody User user) {
+        String username = user.getUsername();
+        if (StrUtil.isBlank(username)) {
+            return Result.error(Constants.CODE_400, "参数错误");
+        }
+        if (user.getId() != null) {
+            user.setPassword(null);
+        } else {
+            user.setNickname(user.getUsername());
+            if (user.getPassword() == null) {
+                user.setPassword("123");
+            }
+        }
         return Result.success(userService.saveOrUpdate(user));
     }
 
@@ -83,6 +106,15 @@ public class UserController {
         return Result.success(userService.list());
     }
 
+    //查询所有老师
+    @GetMapping("/role/{role}")
+    public Result findUserByRole(@PathVariable String role) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("role", role);
+        List<User> list = userService.list(queryWrapper);
+        return Result.success(list);
+    }
+
     //根据id查询
     @GetMapping("/{id}")
     public Result findOne(@PathVariable Integer id) {
@@ -93,6 +125,7 @@ public class UserController {
     @GetMapping("/username/{username}")
     public Result findOne(@PathVariable String username) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        // select * from sys_user where username = #{username}
         queryWrapper.eq("username", username);
         return Result.success(userService.getOne(queryWrapper));
     }
@@ -105,19 +138,19 @@ public class UserController {
                                @RequestParam(defaultValue = "") String email,
                                @RequestParam(defaultValue = "") String address) {
 
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.orderByDesc("id");
-        if (!"".equals(username)) {
-            queryWrapper.like("username", username);
-        }
-        if (!"".equals(email)) {
-            queryWrapper.like("email", email);
-        }
-        if (!"".equals(address)) {
-            queryWrapper.like("address", address);
-        }
+//        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.orderByDesc("id");
+//        if (!"".equals(username)) {
+//            queryWrapper.like("username", username);
+//        }
+//        if (!"".equals(email)) {
+//            queryWrapper.like("email", email);
+//        }
+//        if (!"".equals(address)) {
+//            queryWrapper.like("address", address);
+//        }
 
-        return Result.success(userService.page(new Page<>(pageNum, pageSize), queryWrapper));
+        return Result.success(userService.findPage(new Page<>(pageNum, pageSize), username, email, address));
     }
 
     // 导出

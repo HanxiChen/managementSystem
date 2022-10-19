@@ -3,14 +3,24 @@ package com.example.springboot.controller;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.Quarter;
+import cn.hutool.core.lang.TypeReference;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
+import com.example.springboot.common.Constants;
 import com.example.springboot.common.Result;
+import com.example.springboot.config.AuthAccess;
+import com.example.springboot.entity.Files;
 import com.example.springboot.entity.User;
+import com.example.springboot.mapper.FileMapper;
 import com.example.springboot.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
@@ -23,6 +33,12 @@ public class EchartsController {
 
     @Autowired
     private IUserService userService;
+
+    @Resource
+    private FileMapper fileMapper;
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
 
     @GetMapping("/example")
     public Result get() {
@@ -53,5 +69,24 @@ public class EchartsController {
         }
 
         return Result.success(CollUtil.newArrayList(q1, q2, q3, q4));
+    }
+
+    @AuthAccess
+    @GetMapping("/file/front/all")
+//    @Cacheable(value = "files", key = "'frontAll'")
+    public Result frontAll() {
+        // 1. 从缓存获取数据
+        String jsonStr = stringRedisTemplate.opsForValue().get(Constants.FILES_KEY);
+        List<Files> files;
+        if (StrUtil.isBlank(jsonStr)) {  // 2. 取出来的json是空的
+            files = fileMapper.selectList(null);    // 3. 从数据库取出数据
+
+            stringRedisTemplate.opsForValue().set(Constants.FILES_KEY, JSONUtil.toJsonStr(files));    // 4. 再去缓存到redis
+        } else {
+            // 5. 如果有,从redis缓存中获取数据
+            files = JSONUtil.toBean(jsonStr, new TypeReference<List<Files>>() {
+            }, true);
+        }
+        return Result.success(files);
     }
 }
